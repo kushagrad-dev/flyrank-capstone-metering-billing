@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const pool = require('../db');
 const MeterService = require('../services/MeterService');
+const CostService = require('../services/CostService');
 
 router.get('/:tenantId', async (req, res) => {
   try {
@@ -28,6 +29,8 @@ router.get('/:tenantId', async (req, res) => {
     const apiCallsUsed = await MeterService.getMonthlyUsage(tenantId, 'api_call');
     const tokensUsed = await MeterService.getMonthlyUsage(tenantId, 'ai_tokens');
 
+    const cost = CostService.calculateMonthlyCost(apiCallsUsed, tokensUsed);
+
     return res.json({
       tenant: {
         id: tenant.id,
@@ -45,6 +48,13 @@ router.get('/:tenantId', async (req, res) => {
           limit: tenant.token_limit,
           remaining: tenant.token_limit - tokensUsed,
         },
+      },
+      cost: {
+        api_calls_microcents: cost.apiCallCost,
+        tokens_microcents: cost.tokenCost,
+        total_microcents: cost.totalMicrocents,
+        total_cents: cost.totalCents,
+        total_dollars: cost.totalDollars,
       },
     });
 
