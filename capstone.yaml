@@ -1,0 +1,9 @@
+run: docker compose up -d && npm run migrate && npm run dev
+seed: docker exec -it metering_db psql -U postgres -d metering_billing -c "INSERT INTO tenants (name, plan_id) VALUES ('Seed Corp', 1) ON CONFLICT DO NOTHING;"
+test: npm test
+base_url: http://localhost:3000
+endpoints:
+  - POST /generate
+  - GET /usage/:tenantId
+  - POST /checkout
+  - POST /webhooks/stripe
